@@ -1,0 +1,61 @@
+#!/bin/bash
+# Файл postBuild для диагностики установки Python-пакетов
+
+echo "=== НАЧАЛО ДИАГНОСТИКИ ==="
+
+# 1. Записываем информацию о среде
+echo "1. ИНФОРМАЦИЯ О СИСТЕМЕ:" 
+python --version
+pip --version
+echo ""
+
+# 2. Пытаемся установить зависимости из requirements.txt
+echo "2. УСТАНОВКА ИЗ REQUIREMENTS.TXT:"
+if [ -f "requirements.txt" ]; then
+    echo "Файл requirements.txt найден. Начинаю установку..."
+    # Запускаем установку и записываем ВЕСЬ вывод в лог
+    pip install -r requirements.txt 2>&1 | tee /tmp/pip_install.log
+    PIP_EXIT_CODE=${PIPESTATUS[0]}
+    echo "Код завершения pip: $PIP_EXIT_CODE"
+    
+    # Если была ошибка, показываем конец лога
+    if [ $PIP_EXIT_CODE -ne 0 ]; then
+        echo "!!! ОБНАРУЖЕНА ОШИБКА PIP !!!"
+        echo "Последние строки лога:"
+        tail -20 /tmp/pip_install.log
+    fi
+else
+    echo "Файл requirements.txt не найден."
+fi
+echo ""
+
+# 3. Проверяем, какие пакеты установились
+echo "3. УСТАНОВЛЕННЫЕ ПАКЕТЫ:"
+pip list
+echo ""
+
+# 4. Пробуем импортировать ключевые библиотеки
+echo "4. ТЕСТ ИМПОРТА БИБЛИОТЕК:"
+python -c "
+import sys
+print(f'Python версия: {sys.version}')
+
+test_imports = ['numpy', 'pandas', 'matplotlib']  # Добавьте свои ключевые библиотеки
+
+for lib in test_imports:
+    try:
+        __import__(lib)
+        print(f'✓ {lib} импортирован успешно')
+    except Exception as e:
+        print(f'✗ ОШИБКА импорта {lib}: {e}')
+"
+echo ""
+
+# 5. Показываем структуру проекта
+echo "5. СТРУКТУРА ПРОЕКТА:"
+ls -la
+echo ""
+
+echo "=== ДИАГНОСТИКА ЗАВЕРШЕНА ==="
+echo "Контейнер остановится через 60 секунд..."
+sleep 60
