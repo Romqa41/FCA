@@ -1,19 +1,4 @@
 #!/bin/bash
-# postBuild - УСТАНОВКА С ЗАЩИТОЙ ОТ СБОЕВ
-
-echo "=== НАЧАЛО POSTBUILD ==="
-
-# 1. Устанавливаем зависимости с обработкой ошибок
-if [ -f "requirements.txt" ]; then
-    echo "Установка из requirements.txt..."
-    pip install -r requirements.txt || echo "Предупреждение: pip install завершился с ошибкой"
-fi
-
-# 2. Дополнительные команды (если есть) - каждая в отдельной проверке
-# Например:
-# command1 || echo "Команда1 не выполнена"
-# command2 || echo "Команда2 не выполнена"
-
-# 3. КРИТИЧЕСКИ ВАЖНО: Всегда завершаем успешно
-echo "=== POSTBUILD ЗАВЕРШЕН (даже если были ошибки) ==="
+pip install --upgrade pip
+pip install -r requirements.txt --verbose 2>&1 | tail -20
 exit 0
