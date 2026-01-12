@@ -9,3 +9,4 @@ dependencies:
   - python-dateutil
   - pytz
   - openpyxl
+  - jupyterlab=3.6.5  # ← КЛЮЧЕВАЯ СТРОКА! Фиксируем стабильную 3.x
